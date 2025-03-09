@@ -1,0 +1,78 @@
+{
+  "servers": [
+    {
+      "id": "srv1",
+      "commonName": "Production Web Server",
+      "machineName": "PROD-WEB01",
+      "ipAddresses": ["192.168.1.100", "192.168.1.101"],
+      "icon": "server",
+      "websites": [
+        {
+          "id": "web1",
+          "name": "Main Website",
+          "type": "website",
+          "technology": ".Net Core",
+          "primaryUrl": "https://main.example.com",
+          "additionalUrls": [
+            "https://www.example.com",
+            "https://example.com"
+          ],
+          "status": {
+            "isRunning": true,
+            "lastStatusCode": 200,
+            "lastChecked": "2024-03-08T19:00:00Z",
+            "responseTime": 250
+          },
+          "screenshot": null
+        },
+        {
+          "id": "web2",
+          "name": "API Gateway",
+          "type": "api",
+          "technology": ".Net",
+          "primaryUrl": "https://api.example.com",
+          "additionalUrls": [],
+          "status": {
+            "isRunning": true,
+            "lastStatusCode": 200,
+            "lastChecked": "2024-03-08T19:00:00Z",
+            "responseTime": 150
+          },
+          "screenshot": null
+        }
+      ]
+    },
+    {
+      "id": "srv2",
+      "commonName": "Development Server",
+      "machineName": "DEV-WEB01",
+      "ipAddresses": ["192.168.2.100"],
+      "icon": "server",
+      "websites": [
+        {
+          "id": "web3",
+          "name": "Dev Portal",
+          "type": "website",
+          "technology": "React",
+          "primaryUrl": "https://dev.example.com",
+          "additionalUrls": [],
+          "status": {
+            "isRunning": true,
+            "lastStatusCode": 500,
+            "lastChecked": "2024-03-08T19:00:00Z",
+            "responseTime": 0
+          },
+          "screenshot": null
+        }
+      ]
+    }
+  ],
+  "userLayouts": {
+    "john.doe": {
+      "layout": [
+        {"i": "srv1", "x": 0, "y": 0, "w": 1, "h": 1},
+        {"i": "srv2", "x": 1, "y": 0, "w": 1, "h": 1}
+      ]
+    }
+  }
+}
