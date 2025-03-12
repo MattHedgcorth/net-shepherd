@@ -39,14 +39,18 @@ const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
   };
 
   return (
-    <Card 
+    <Card
       onClick={onClick}
       sx={{
         height: '100%',
         cursor: 'pointer',
-        transition: 'transform 0.2s',
+        transition: 'all 0.2s',
+        background: 'rgba(26, 26, 46, 0.7)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
         '&:hover': {
           transform: 'scale(1.02)',
+          background: 'rgba(26, 26, 46, 0.8)',
         },
       }}
     >
@@ -60,7 +64,7 @@ const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
           {server.commonName}
         </Typography>
 
-        <Typography variant="body2" color="text.secondary" gutterBottom>
+        <Typography variant="body2" color="rgba(255, 255, 255, 0.7)" gutterBottom>
           {server.machineName}
         </Typography>
 
@@ -76,13 +80,13 @@ const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
         </Box>
 
         <Box sx={{ display: 'grid', gap: 1 }}>
-          <Typography variant="body2">
+          <Typography variant="body2" color="rgba(255, 255, 255, 0.9)">
             Total Websites: {stats.totalWebsites}
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" color="rgba(255, 255, 255, 0.9)">
             Running: {stats.runningWebsites}
           </Typography>
-          <Typography variant="body2">
+          <Typography variant="body2" color="rgba(255, 255, 255, 0.9)">
             Offline: {stats.offlineWebsites}
           </Typography>
           <Typography variant="body2" sx={{ color: getResponseColor() }}>

@@ -5,7 +5,20 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #0A1929;
+  background:
+    radial-gradient(circle at center, rgba(0,0,0,0.2) 0%, transparent 95%),
+    linear-gradient(350deg,
+      rgba(255, 20, 100, 0.4) 0%,
+      rgba(204, 0, 64, 0.3) 20%,
+      rgba(26, 10, 32, 0.4) 45%,
+      rgba(10, 10, 31, 0.4) 55%,
+      rgba(0, 64, 128, 0.3) 80%,
+      rgba(0, 119, 204, 0.4) 100%
+    );
+  min-height: 100vh;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  overflow-x: hidden;
 }
 
 code {

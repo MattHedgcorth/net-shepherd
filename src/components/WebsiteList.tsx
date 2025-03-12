@@ -71,16 +71,20 @@ const WebsiteList: React.FC<Props> = ({ websites }) => {
 
   return (
     <>
-      <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+      <List sx={{ width: '100%', bgcolor: 'transparent' }}>
         {websites.map((website) => (
           <ListItem
             key={website.id}
             sx={{
               mb: 2,
               borderRadius: 1,
-              bgcolor: 'background.paper',
+              bgcolor: 'rgba(10, 25, 41, 0.7)',
+              backdropFilter: 'blur(8px)',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
               '&:hover': {
-                bgcolor: 'action.hover',
+                bgcolor: 'rgba(10, 25, 41, 0.8)',
+                transform: 'translateY(-2px)',
+                transition: 'all 0.2s ease-in-out',
               },
             }}
           >
