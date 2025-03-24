@@ -17,14 +17,19 @@ import {
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
   Error as ErrorIcon,
+  Pause as PauseIcon,
 } from '@mui/icons-material';
+import CircularProgress from '@mui/material/CircularProgress';
 import { Website, WebsiteType, TechnologyType } from '../types/types';
 
 interface Props {
   websites: Website[];
+  isPolling?: boolean;
+  isPaused?: boolean;
+  pollingServerId?: string | null;
 }
 
-const WebsiteList: React.FC<Props> = ({ websites }) => {
+const WebsiteList: React.FC<Props> = ({ websites, isPolling = false, isPaused = false, pollingServerId = null }) => {
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
 
   const getWebsiteTypeIcon = (type: WebsiteType) => {
@@ -57,6 +62,15 @@ const WebsiteList: React.FC<Props> = ({ websites }) => {
   };
 
   const getStatusIcon = (website: Website) => {
+    // Show spinner during polling or pause icon if paused
+    if (isPolling) {
+      if (isPaused) {
+        return <PauseIcon sx={{ color: 'info.main' }} />;
+      }
+      return <CircularProgress size={20} thickness={5} />;
+    }
+    
+    // Regular status icons
     if (!website.status.isRunning) {
       return <ErrorIcon sx={{ color: 'error.main' }} />;
     }

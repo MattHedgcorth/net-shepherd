@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from '@emotion/styled';
+import { Link } from 'react-router-dom';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -63,7 +64,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <HeaderContainer>
       <LogoContainer>
-        <Logo viewBox="0 0 600 100" xmlns="http://www.w3.org/2000/svg">
+        <Link to="/">
+          <Logo viewBox="0 0 600 100" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#00B4E6"/>
@@ -90,7 +92,8 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           <text x="100" y="65" fill="url(#textGradient)" fontFamily="Arial, sans-serif" fontSize="48" fontWeight="bold">
             NetShepherd<tspan fill="#9932CC">.Cloud</tspan>
           </text>
-        </Logo>
+          </Logo>
+        </Link>
       </LogoContainer>
       {user && (
         <UserSection>

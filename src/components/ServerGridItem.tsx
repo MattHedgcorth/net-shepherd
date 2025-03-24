@@ -1,23 +1,34 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip, CircularProgress } from '@mui/material';
 import { Server, ServerStats } from '../types/types';
 import {
   CheckCircle as CheckIcon,
   Warning as WarningIcon,
   Error as ErrorIcon,
   Storage as ServerIcon,
+  Pause as PauseIcon,
 } from '@mui/icons-material';
+import { useServerContext } from '../context/ServerContext';
 
 interface Props {
   server: Server;
   stats: ServerStats;
-  onClick: () => void;
+  onClick: (serverId: string) => void;
 }
 
 const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
+  const { isPolling, isPaused } = useServerContext();
+
   const getStatusIcon = () => {
-    const responsePercentage = stats.runningWebsites === 0 
-      ? 0 
+    if (isPolling) {
+      if (isPaused) {
+        return <PauseIcon sx={{ color: 'info.main', fontSize: 40 }} />;
+      }
+      return <CircularProgress size={40} />;
+    }
+
+    const responsePercentage = stats.runningWebsites === 0
+      ? 0
       : (stats.respondingWebsites / stats.runningWebsites) * 100;
 
     if (responsePercentage > 50) {
@@ -40,7 +51,6 @@ const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
 
   return (
     <Card
-      onClick={onClick}
       sx={{
         height: '100%',
         cursor: 'pointer',
@@ -54,7 +64,7 @@ const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
         },
       }}
     >
-      <CardContent>
+      <CardContent onClick={() => onClick(server.id)}>
         <Box display="flex" justifyContent="space-between" alignItems="flex-start">
           <ServerIcon sx={{ fontSize: 40, color: 'primary.main' }} />
           {getStatusIcon()}
