@@ -1,8 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { ServerData, Server, Website, WebsiteType, TechnologyType } from '../types/types';
 import rawServerData from '../data/servers.json';
-import axios from 'axios';
-
 // Type assertion function to ensure data matches our types
 const parseServerData = (data: any): ServerData => {
   const servers: Server[] = data.servers.map((server: any) => ({
@@ -83,99 +81,162 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     // Reset stop flag when starting new polling
     setShouldStop(false);
-
-    // If no serverId is provided, poll all servers
-    const serversToPoll = serverId ? [data.servers.find(s => s.id === serverId)].filter(Boolean) : data.servers;
-
     setIsPolling(true);
     setPollingServerId(serverId);
 
     try {
-      const updatedServers = await Promise.all(data.servers.map(async server => {
+      // Collect all websites that need to be polled
+      type WebsiteToPoll = { server: Server; website: Website };
+      const websitesToPoll: WebsiteToPoll[] = [];
+      
+      data.servers.forEach(server => {
         if (serverId && server.id !== serverId) {
-          return server; // Skip polling for other servers if specific serverId provided
+          return; // Skip polling for other servers if specific serverId provided
         }
-
-        const throttledWebsites = [];
-        const maxConcurrentRequests = 3; // Limit concurrent requests
-        let runningRequests = 0;
-        let websiteIndex = 0;
-
-        return {
-          ...server,
-          websites: await Promise.all(server.websites.map(async website => {
-            return new Promise(resolve => {
-              const poll = async () => {
-                // Check if polling should be stopped
-                if (shouldStop) {
-                  resolve(website);
-                  return;
-                }
-
-                // If paused, wait and check again
-                if (isPaused) {
-                  setTimeout(() => poll(), 1000);
-                  return;
-                }
-
-                try {
-                  const corsProxyUrl = 'https://api.allorigins.win/get?url='; // Use a CORS proxy
-                  const response = await axios.get(corsProxyUrl + encodeURIComponent(website.primaryUrl), {
-                    timeout: 5000,
-                    headers: {
-                      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                      'Accept-Language': 'en-US,en;q=0.5',
-                      'Referer': 'http://localhost:3000/',
-                      'Cache-Control': 'no-cache',
-                      'Connection': 'keep-alive'
-                    }
-                  });
-                  resolve({
-                    ...website,
-                    status: {
-                      ...website.status,
-                      lastChecked: new Date().toISOString(),
-                      lastStatusCode: response.status,
-                      responseTime: response.headers['request-duration'] ? parseInt(response.headers['request-duration'], 10) : 0,
-                      isRunning: true
-                    }
-                  });
-                } catch (error: any) {
-                  console.error(`Error polling ${website.primaryUrl}:`, error);
-                  resolve({
-                    ...website,
-                    status: {
-                      ...website.status,
-                      lastChecked: new Date().toISOString(),
-                      lastStatusCode: error.response?.status || error.code === 'ECONNABORTED' ? 408 : 500,
-                      responseTime: 0,
-                      isRunning: false
-                    }
-                  });
-                } finally {
-                  runningRequests--;
-                  if (websiteIndex < server.websites.length && runningRequests < maxConcurrentRequests) {
-                    poll();
-                  }
+        
+        server.websites.forEach(website => {
+          websitesToPoll.push({ server, website });
+        });
+      });
+      
+      // Create a copy of the servers to update
+      const serversCopy = [...data.servers];
+      
+      // Set up polling with limited concurrency
+      const maxConcurrentRequests = 10; // Limit to 10 concurrent requests
+      let activeRequests = 0;
+      let websiteIndex = 0;
+      
+      // Function to poll a single website
+      const pollWebsite = async (server: Server, website: Website): Promise<void> => {
+        // Add 1 second delay before polling
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // If paused, wait until resumed
+        while (isPaused && !shouldStop) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        // If stopped, return immediately
+        if (shouldStop) {
+          return;
+        }
+        
+        try {
+          // Use our .NET API to check the website status
+          console.log(`Checking website status for ${website.primaryUrl} via API`);
+          
+          // Call the API endpoint using fetch
+          const response = await fetch(`http://localhost:5085/api/WebsiteStatus/check?url=${encodeURIComponent(website.primaryUrl)}`, {
+            method: 'GET',
+            headers: {
+              'Accept': 'application/json'
+            },
+            signal: AbortSignal.timeout(10000) // 10 second timeout
+          });
+          
+          if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+          }
+          
+          // The API response contains the status information
+          const statusData = await response.json();
+          
+          // Find the server and website in our copy and update it
+          const serverIndex = serversCopy.findIndex(s => s.id === server.id);
+          if (serverIndex !== -1) {
+            const websiteIndex = serversCopy[serverIndex].websites.findIndex(w => w.id === website.id);
+            if (websiteIndex !== -1) {
+              serversCopy[serverIndex].websites[websiteIndex] = {
+                ...website,
+                status: {
+                  ...website.status,
+                  lastChecked: new Date().toISOString(),
+                  lastStatusCode: statusData.statusCode,
+                  responseTime: statusData.responseTime,
+                  isRunning: statusData.isRunning
                 }
               };
-
-              if (runningRequests < maxConcurrentRequests) {
-                runningRequests++;
-                websiteIndex++;
-                poll();
-              } else {
-                throttledWebsites.push(website);
+              
+              // Update the state with the latest changes
+              setData(prevData => ({
+                ...prevData,
+                servers: [...serversCopy]
+              }));
+            }
+          }
+        } catch (error: any) {
+          console.error(`Error polling ${website.primaryUrl}:`, error);
+          
+          // Find the server and website in our copy and update it
+          const serverIndex = serversCopy.findIndex(s => s.id === server.id);
+          if (serverIndex !== -1) {
+            const websiteIndex = serversCopy[serverIndex].websites.findIndex(w => w.id === website.id);
+            if (websiteIndex !== -1) {
+              let statusCode = 500;
+              
+              if (error.name === 'AbortError' || error.message.includes('timeout')) {
+                statusCode = 408; // Request Timeout
+              } else if (error instanceof TypeError || error.message.includes('network') || error.message.includes('fetch')) {
+                statusCode = 503; // Service Unavailable - for network errors
+              } else if (error.message.includes('API error:')) {
+                // Extract status code from API error message if possible
+                const match = error.message.match(/API error: (\d+)/);
+                if (match && match[1]) {
+                  statusCode = parseInt(match[1], 10);
+                }
               }
-            });
-          })) as Website[]
-        };
-      }));
-
-      setData(prevData => ({
-        ...prevData,
-        servers: updatedServers
-      }));
+              
+              serversCopy[serverIndex].websites[websiteIndex] = {
+                ...website,
+                status: {
+                  ...website.status,
+                  lastChecked: new Date().toISOString(),
+                  lastStatusCode: statusCode,
+                  responseTime: 0,
+                  isRunning: false
+                }
+              };
+              
+              // Update the state with the latest changes
+              setData(prevData => ({
+                ...prevData,
+                servers: [...serversCopy]
+              }));
+            }
+          }
+        }
+      };
+      
+      // Process websites in batches
+      const processWebsites = async () => {
+        while (websiteIndex < websitesToPoll.length && activeRequests < maxConcurrentRequests) {
+          if (shouldStop) {
+            break;
+          }
+          
+          const { server, website } = websitesToPoll[websiteIndex];
+          websiteIndex++;
+          activeRequests++;
+          
+          // Start polling this website
+         pollWebsite(server, website).then(() => {
+            activeRequests--;
+            // When a request completes, try to start more
+            if (!shouldStop) {
+              processWebsites();
+            }
+          });
+        }
+      };
+      
+      // Start the initial batch of requests
+      await processWebsites();
+      
+      // Wait for all requests to complete
+      while (activeRequests > 0 && !shouldStop) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     } finally {
       setIsPolling(false);
       setPollingServerId(null);

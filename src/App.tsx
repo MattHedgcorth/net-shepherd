@@ -1,11 +1,12 @@
 import React from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import { CssBaseline, Box, Button } from '@mui/material';
-import { BrowserRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
-import { Refresh as RefreshIcon, ArrowBack as ArrowBackIcon, Pause as PauseIcon, PlayArrow as PlayArrowIcon, Stop as StopIcon } from '@mui/icons-material';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useParams, Link } from 'react-router-dom';
+import { Refresh as RefreshIcon, ArrowBack as ArrowBackIcon, Pause as PauseIcon, PlayArrow as PlayArrowIcon, Stop as StopIcon, Api as ApiIcon } from '@mui/icons-material';
 import { theme } from './theme/theme';
 import ServerGrid from './components/ServerGrid';
 import WebsiteList from './components/WebsiteList';
+import ApiTest from './components/ApiTest';
 import { ServerProvider, useServerContext } from './context/ServerContext';
 import { UserProvider, useUser } from './context/UserContext';
 import Header from './components/Header';
@@ -66,6 +67,18 @@ const ServerGridPage: React.FC = () => {
       flexDirection: 'column',
     }}>
       <Header user={{ name: username }} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+        <Button
+          component={Link}
+          to="/api-test"
+          variant="outlined"
+          startIcon={<ApiIcon />}
+          size="small"
+          sx={{ mb: 1 }}
+        >
+          API Test
+        </Button>
+      </Box>
       <Box sx={{ flex: 1, position: 'relative', marginTop: 0, display: 'flex', flexDirection: 'column', paddingTop: '0px' }}>
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
           <PollControls />
@@ -110,6 +123,18 @@ const ServerDetailPage: React.FC = () => {
       flexDirection: 'column',
     }}>
       <Header user={{ name: username }} />
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 1 }}>
+        <Button
+          component={Link}
+          to="/api-test"
+          variant="outlined"
+          startIcon={<ApiIcon />}
+          size="small"
+          sx={{ mb: 1 }}
+        >
+          API Test
+        </Button>
+      </Box>
       <Box sx={{ flex: 1, p: 3 }}>
         <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
           <Button
@@ -160,11 +185,39 @@ const ServerDetailPage: React.FC = () => {
   );
 };
 
+const ApiTestPage: React.FC = () => {
+  const navigate = useNavigate();
+  const [username] = React.useState<string>('john.doe');
+
+  return (
+    <Box sx={{
+      minHeight: '100vh',
+      display: 'flex',
+      flexDirection: 'column',
+    }}>
+      <Header user={{ name: username }} />
+      <Box sx={{ flex: 1, p: 3 }}>
+        <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBackIcon />}
+            onClick={() => navigate('/')}
+          >
+            Back to Grid
+          </Button>
+        </Box>
+        <ApiTest />
+      </Box>
+    </Box>
+  );
+};
+
 const AppRoutes: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<ServerGridPage />} />
       <Route path="/server/:id" element={<ServerDetailPage />} />
+      <Route path="/api-test" element={<ApiTestPage />} />
     </Routes>
   );
 };

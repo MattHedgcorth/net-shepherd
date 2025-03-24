@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "YOAwhaEy2HQ=",
+  "success": true,
+  "projectFilePath": "C:\\AI\\GIT-REPO\\net-shepherd\\net-shepherd-v2\\net-shepherd\\api\\WebsiteStatusApi\\WebsiteStatusApi.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\matt\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.3\\microsoft.aspnetcore.openapi.9.0.3.nupkg.sha512",
+    "C:\\Users\\matt\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": []
+}

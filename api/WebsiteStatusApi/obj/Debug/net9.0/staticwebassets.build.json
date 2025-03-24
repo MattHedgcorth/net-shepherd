@@ -1,0 +1,12 @@
+{
+  "Version": 1,
+  "Hash": "pN1ScBHleGb+j7hrW8tUkNnnsg1Vcm+Ru6YAM++DBiQ=",
+  "Source": "WebsiteStatusApi",
+  "BasePath": "_content/WebsiteStatusApi",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": [],
+  "Endpoints": []
+}
