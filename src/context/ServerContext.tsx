@@ -38,6 +38,7 @@ interface ServerContextType {
   pollWebsites: (serverId: string) => void;
   isPolling: boolean;
   pollingServerId: string | null;
+  pollingWebsiteIds: string[];
   isPaused: boolean;
   togglePause: () => void;
   stopPolling: () => void;
@@ -49,6 +50,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [data, setData] = useState<ServerData>(parseServerData(rawServerData));
   const [isPolling, setIsPolling] = useState<boolean>(false);
   const [pollingServerId, setPollingServerId] = useState<string | null>(null);
+  const [pollingWebsiteIds, setPollingWebsiteIds] = useState<string[]>([]);
   const [isPaused, setIsPaused] = useState<boolean>(false);
   const [shouldStop, setShouldStop] = useState<boolean>(false);
 
@@ -60,6 +62,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setShouldStop(true);
     setIsPolling(false);
     setPollingServerId(null);
+    setPollingWebsiteIds([]);
   };
 
   const updateLayout = (username: string, layout: any[]) => {
@@ -83,6 +86,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setShouldStop(false);
     setIsPolling(true);
     setPollingServerId(serverId);
+    setPollingWebsiteIds([]);
 
     try {
       // Collect all websites that need to be polled
@@ -126,6 +130,9 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           // Use our .NET API to check the website status
           console.log(`Checking website status for ${website.primaryUrl} via API`);
           
+          // Add this website to the list of currently polling websites
+          setPollingWebsiteIds(prev => [...prev, website.id]);
+          
           // Call the API endpoint using fetch
           const response = await fetch(`http://localhost:5085/api/WebsiteStatus/check?url=${encodeURIComponent(website.primaryUrl)}`, {
             method: 'GET',
@@ -165,6 +172,9 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               }));
             }
           }
+          
+          // Remove this website from the list of currently polling websites
+          setPollingWebsiteIds(prev => prev.filter(id => id !== website.id));
         } catch (error: any) {
           console.error(`Error polling ${website.primaryUrl}:`, error);
           
@@ -205,6 +215,9 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
               }));
             }
           }
+          
+          // Remove this website from the list of currently polling websites
+          setPollingWebsiteIds(prev => prev.filter(id => id !== website.id));
         }
       };
       
@@ -244,7 +257,7 @@ export const ServerProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   return (
-    <ServerContext.Provider value={{ data, updateLayout, pollWebsites, isPolling, pollingServerId, isPaused, togglePause, stopPolling }}>
+    <ServerContext.Provider value={{ data, updateLayout, pollWebsites, isPolling, pollingServerId, pollingWebsiteIds, isPaused, togglePause, stopPolling }}>
       {children}
     </ServerContext.Provider>
   );
@@ -255,5 +268,5 @@ export const useServerContext = () => {
   if (context === undefined) {
     throw new Error('useServerContext must be used within a ServerProvider');
   }
-  return { ...context, isPolling: context.isPolling };
+  return { ...context, isPolling: context.isPolling, pollingWebsiteIds: context.pollingWebsiteIds };
 };

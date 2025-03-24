@@ -27,9 +27,16 @@ interface Props {
   isPolling?: boolean;
   isPaused?: boolean;
   pollingServerId?: string | null;
+  pollingWebsiteIds?: string[];
 }
 
-const WebsiteList: React.FC<Props> = ({ websites, isPolling = false, isPaused = false, pollingServerId = null }) => {
+const WebsiteList: React.FC<Props> = ({
+  websites,
+  isPolling = false,
+  isPaused = false,
+  pollingServerId = null,
+  pollingWebsiteIds = []
+}) => {
   const [selectedScreenshot, setSelectedScreenshot] = useState<string | null>(null);
 
   const getWebsiteTypeIcon = (type: WebsiteType) => {
@@ -62,8 +69,8 @@ const WebsiteList: React.FC<Props> = ({ websites, isPolling = false, isPaused = 
   };
 
   const getStatusIcon = (website: Website) => {
-    // Show spinner during polling or pause icon if paused
-    if (isPolling) {
+    // Show spinner only for websites that are actively being polled
+    if (isPolling && pollingWebsiteIds.includes(website.id)) {
       if (isPaused) {
         return <PauseIcon sx={{ color: 'info.main' }} />;
       }

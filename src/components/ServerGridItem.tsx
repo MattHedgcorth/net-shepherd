@@ -9,6 +9,7 @@ import {
   Pause as PauseIcon,
 } from '@mui/icons-material';
 import { useServerContext } from '../context/ServerContext';
+import { Website } from '../types/types';
 
 interface Props {
   server: Server;
@@ -17,10 +18,20 @@ interface Props {
 }
 
 const ServerGridItem: React.FC<Props> = ({ server, stats, onClick }) => {
-  const { isPolling, isPaused } = useServerContext();
+  const { isPolling, isPaused, pollingWebsiteIds } = useServerContext();
+  
+  // Check if any of this server's websites are being polled
+  const isServerBeingPolled = () => {
+    if (!isPolling) return false;
+    
+    // Check if any website from this server is in the pollingWebsiteIds array
+    return server.websites.some((website: Website) =>
+      pollingWebsiteIds.includes(website.id)
+    );
+  };
 
   const getStatusIcon = () => {
-    if (isPolling) {
+    if (isPolling && isServerBeingPolled()) {
       if (isPaused) {
         return <PauseIcon sx={{ color: 'info.main', fontSize: 40 }} />;
       }
