@@ -28,12 +28,17 @@ const ServerGridPage: React.FC = () => {
       flexDirection: 'column',
     }}>
       <Header user={{ name: username }} />
-      <Box sx={{ flex: 1, position: 'relative' }}>
+      <Box sx={{ flex: 1, position: 'relative', marginTop: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', paddingTop: '0px' }}>
         <Button
           variant="contained"
           startIcon={<RefreshIcon />}
           onClick={pollWebsites}
-          sx={{ position: 'absolute', top: 16, right: 16, zIndex: 1000 }}
+          sx={{
+            zIndex: 1000,
+            marginBottom: '10px',
+            marginTop: '10px',
+            minWidth: '150px',
+          }}
         >
           Poll Websites
         </Button>
